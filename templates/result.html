@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+.result-item {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.result-item.correct {
+    border-left: 5px solid green;
+}
+
+.result-item.incorrect {
+    border-left: 5px solid red;
+}
+
+.answer-text.correct {
+    color: green;
+}
+
+.answer-text.incorrect {
+    color: red;
+}
+</style>
+
+<div class="result-wrapper">
+
+    <div class="result-card">
+
+        <h2>Exam Result</h2>
+
+        <p><b>Exam:</b> {{ exam_name }}</p>
+        <p>Total Questions: {{ total }}</p>
+        <p>Correct Answers: {{ score }}</p>
+        <p>Percentage: {{ percentage }}%</p>
+
+        <hr>
+
+        <h3>Answer Review</h3>
+
+{% for item in details %}
+<div class="review-block">
+
+    <p><b>Q{{ loop.index }}. {{ item.question }}</b></p>
+
+    <p>
+        Your Answer:
+        <span class="{% if item.is_correct %}correct{% else %}wrong{% endif %}">
+            {{ item.selected }}
+        </span>
+    </p>
+
+    <p>Correct Answer: <b>{{ item.correct }}</b></p>
+
+</div>
+{% endfor %}
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+

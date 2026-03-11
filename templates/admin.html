@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="admin-wrapper">
+
+    <!-- Dashboard -->
+    <div class="admin-section">
+        <h3>Dashboard Statistics</h3>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <h2>{{ total_students }}</h2>
+                <p>Total Students</p>
+            </div>
+
+            <div class="stat-card">
+                <h2>{{ total_questions }}</h2>
+                <p>Total Questions</p>
+            </div>
+
+            <div class="stat-card">
+                <h2>{{ total_attempts }}</h2>
+                <p>Total Attempts</p>
+            </div>
+        </div>
+
+        <a href="/export_results">
+            <button>Download Results (CSV)</button>
+        </a>
+    </div>
+
+    <div class="admin-section">
+    <h3>All Exams</h3>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Exam Name</th>
+            <th>Action</th>
+        </tr>
+
+        {% for exam in exams %}
+        <tr>
+            <td>{{ exam[0] }}</td>
+            <td>{{ exam[1] }}</td>
+            <td>
+                <a href="/delete_exam/{{ exam[0] }}"
+                   onclick="return confirm('Are you sure you want to delete this exam?')">
+                   Delete
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+ </div>
+
+    <!-- Create Exam -->
+    <div class="admin-section">
+        <h3>Create Exam</h3>
+
+        <form action="/create_exam" method="post">
+            <input type="text" name="exam_name" placeholder="Exam Name" required>
+            <button type="submit">Create Exam</button>
+        </form>
+    </div>
+
+
+    <!-- Add Question -->
+    <div class="admin-section">
+        <h3>Add Question</h3>
+
+        <form method="post">
+            <select name="exam_id" required>
+                <option value="">Select Exam</option>
+                {% for exam in exams %}
+                    <option value="{{ exam[0] }}">{{ exam[1] }}</option>
+                {% endfor %}
+            </select>
+
+            <input type="text" name="question" placeholder="Question" required>
+            <input type="text" name="option_a" placeholder="Option A" required>
+            <input type="text" name="option_b" placeholder="Option B" required>
+            <input type="text" name="option_c" placeholder="Option C" required>
+            <input type="text" name="option_d" placeholder="Option D" required>
+            <input type="text" name="correct_option" placeholder="Correct Option (A/B/C/D)" required>
+
+            <button type="submit">Add Question</button>
+        </form>
+
+        {% if message %}
+            <p style="color:green;">{{ message }}</p>
+        {% endif %}
+    </div>
+
+
+    <!-- All Questions -->
+    <div class="admin-section">
+        <h3>All Questions</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:10%">ID</th>
+                    <th style="width:70%">Question</th>
+                    <th style="width:20%">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in questions %}
+                <tr>
+                    <td>{{ q[0] }}</td>
+                    <td style="text-align:left">{{ q[2] }}</td>
+                    <td>
+                        <a href="/edit_question/{{ q[0] }}">Edit</a> |
+                        <a href="/delete_question/{{ q[0] }}">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <h3>Upload Questions (CSV)</h3>
+
+<form action="/upload_questions" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" required>
+    <button type="submit">Upload</button>
+</form>
+
+    <!-- Student Results -->
+    <div class="admin-section">
+        <h3>Student Results</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:70%">Username</th>
+                    <th style="width:30%">Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in results %}
+                <tr>
+                    <td>{{ r[0] }}</td>
+                    <td>{{ r[1] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

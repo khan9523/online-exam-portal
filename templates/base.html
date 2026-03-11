@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Exam Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="navbar">
+        <h2>Online Exam Portal</h2>
+        {% if session.get("username") %}
+            <div>
+                Welcome, {{ session.get("username") }} |
+                <a href="/logout">Logout</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% block content %}
+    {% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="center-wrapper">
+
+    <div class="exam-container">
+        <h2>Select Exam</h2>
+
+        <ul class="exam-list">
+            {% for exam in exams %}
+            <li>
+                <a href="/student?exam_id={{ exam[0] }}">
+                    {{ exam[1] }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+</div>
+{% endblock %}

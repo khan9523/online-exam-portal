@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+
+
+
+    <title>Login</title>
+</head>
+<body>
+    <h2 style="text-align:center; margin-top:30px;">
+    Online Examination System - Login
+</h2>
+
+
+    {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="success-message">
+      {{ messages[0] }}
+    </div>
+  {% endif %}
+{% endwith %}
+
+    <div class="center-wrapper">
+    <div class="login-card">
+
+        
+
+    <form method="post" action="/login">
+        <label>Username:</label><br>
+        <input type="text" name="username" required><br><br>
+
+        <label>Password:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <label>Login As:</label><br>
+        <select name="role">
+            
+            <option value="student">Student</option>
+            <option value="admin">Admin</option>
+        </select><br><br>
+
+        <button type="submit">Login</button>
+
+        {% if error %}
+        <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <p style="text-align:center; margin-top:15px;">
+    New student? <a href="/register">Register here</a>
+</p>
+    </form>
+    </div>
+    </div>
+
+
+    
+
+
+
+
+
+    
+</body>
+</html>

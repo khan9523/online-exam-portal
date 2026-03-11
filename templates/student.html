@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="exam-wrapper">
+
+    <div class="exam-card">
+
+        <h2>Online Examination</h2>
+
+        <form method="POST">
+
+            {% for q in questions %}
+                <div class="question-block">
+                    <p><b>{{ loop.index }}. {{ q[2] }}</b></p>
+
+                    <input type="radio" name="{{ q[0] }}" value="A" required> {{ q[3] }}<br>
+                    <input type="radio" name="{{ q[0] }}" value="B"> {{ q[4] }}<br>
+                    <input type="radio" name="{{ q[0] }}" value="C"> {{ q[5] }}<br>
+                    <input type="radio" name="{{ q[0] }}" value="D"> {{ q[6] }}<br><br>
+                </div>
+            {% endfor %}
+
+            <button type="submit">Submit Exam</button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
