@@ -59,6 +59,11 @@ def create_tables():
     )
     """)
 
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_users_username_role ON users(username, role)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_questions_exam_id ON questions(exam_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_results_username_exam ON results(username, exam_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_answers_username_exam ON answers(username, exam_id)")
+
 
     conn.commit()
     conn.close()

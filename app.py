@@ -1,4 +1,4 @@
-
+﻿
 try:
     from flask import Flask, render_template, request, redirect, session, Response, flash  # type: ignore
 except ImportError as e:
@@ -9,6 +9,7 @@ try:
 except ImportError as e:
     raise ImportError("werkzeug not installed. Please run: pip install werkzeug") from e
 
+import os
 import sqlite3
 import csv
 from database import create_tables
@@ -17,10 +18,26 @@ app = Flask(__name__)
 app.secret_key = "exam_secret_key"
 
 
+def get_db_connection():
+    conn = sqlite3.connect("exam.db", timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA synchronous=NORMAL")
+    return conn
+
+
+# Initialize database during worker startup (important for gunicorn/Render).
+create_tables()
+
+
 # -------------------- HOME --------------------
 @app.route("/")
 def home():
     return redirect("/login")
+
+
+@app.route("/health")
+def health():
+    return {"status": "ok"}, 200
 
 
 # -------------------- LOGIN --------------------
@@ -33,7 +50,7 @@ def login():
         password = request.form["password"]
         role = request.form["role"]
 
-        conn = sqlite3.connect("exam.db")
+        conn = get_db_connection()
         cursor = conn.cursor()
 
         cursor.execute(
@@ -67,7 +84,7 @@ def register():
         username = request.form["username"]
         password = request.form["password"]
 
-        conn = sqlite3.connect("exam.db")
+        conn = get_db_connection()
         cursor = conn.cursor()
 
         cursor.execute(
@@ -92,7 +109,7 @@ def create_exam():
 
     exam_name = request.form["exam_name"]
 
-    conn = sqlite3.connect("exam.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("INSERT INTO exams (exam_name) VALUES (?)", (exam_name,))
     conn.commit()
@@ -110,7 +127,7 @@ def admin():
     if "role" not in session or session["role"] != "admin":
         return redirect("/login")
 
-    conn = sqlite3.connect("exam.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     message = None
@@ -181,7 +198,7 @@ def upload_questions():
 
     file = request.files["file"]
 
-    conn = sqlite3.connect("exam.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     csv_data = csv.reader(file.stream.read().decode("UTF-8").splitlines())
@@ -205,7 +222,7 @@ def student():
     if "role" not in session or session["role"] != "student":
         return redirect("/login")
 
-    conn = sqlite3.connect("exam.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     # Fetch exams
@@ -345,7 +362,7 @@ def clear_results():
     if "role" not in session or session["role"] != "admin":
         return redirect("/login")
 
-    conn = sqlite3.connect("exam.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM results")
     conn.commit()
@@ -359,7 +376,7 @@ def delete_question(q_id):
     if "role" not in session or session["role"] != "admin":
         return redirect("/login")
 
-    conn = sqlite3.connect("exam.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM questions WHERE id=?", (q_id,))
     conn.commit()
@@ -374,7 +391,7 @@ def edit_question(q_id):
     if "role" not in session or session["role"] != "admin":
         return redirect("/login")
 
-    conn = sqlite3.connect("exam.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     if request.method == "POST":
@@ -409,7 +426,7 @@ def export_results():
     if "role" not in session or session["role"] != "admin":
         return redirect("/login")
 
-    conn = sqlite3.connect("exam.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT username, score FROM results")
     data = cursor.fetchall()
@@ -433,7 +450,7 @@ def delete_exam(exam_id):
     if "role" not in session or session["role"] != "admin":
         return redirect("/login")
 
-    conn = sqlite3.connect("exam.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     # Delete answers first (child table)
@@ -464,6 +481,6 @@ def logout():
 
 # -------------------- RUN APP --------------------
 if __name__ == "__main__":
-    create_tables()
-    app.run(host="0.0.0.0", port=10000)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+
 
