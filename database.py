@@ -1,7 +1,55 @@
 import sqlite3
 
+
 def connect_db():
-    return sqlite3.connect("exam.db")
+    conn = sqlite3.connect("exam.db", timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA synchronous=NORMAL")
+    return conn
+
+
+def fetch_one(query, params=()):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    row = cursor.fetchone()
+    conn.close()
+    return row
+
+
+def fetch_all(query, params=()):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+
+def execute_write(query, params=()):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    conn.commit()
+    conn.close()
+
+
+def execute_many(query, rows):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.executemany(query, rows)
+    conn.commit()
+    conn.close()
+
+
+def execute_batch(statements):
+    conn = connect_db()
+    cursor = conn.cursor()
+    for query, params in statements:
+        cursor.execute(query, params)
+    conn.commit()
+    conn.close()
+
 
 def create_tables():
     conn = connect_db()

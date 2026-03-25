@@ -1,15 +1,13 @@
 body {
     margin: 0;
     padding: 0;
-    background: #f4f6f8;
     font-family: Arial, sans-serif;
-   
+    background: #f4f6f9;
 }
 
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background-color: #f4f6f9;
+a {
+    text-decoration: none;
+    font-weight: bold;
 }
 
 .navbar {
@@ -23,12 +21,13 @@ body {
 
 .navbar a {
     color: white;
-    text-decoration: none;
     margin-left: 10px;
 }
 
 .container {
+    width: 100%;
     padding: 30px;
+    box-sizing: border-box;
 }
 
 form {
@@ -39,31 +38,26 @@ form {
 }
 
 button {
-    padding: 8px 15px;
-    background-color: #3498db;
-    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
     border: none;
-    border-radius: 4px;
+    background: #4a90e2;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #c2940b;
 }
 
 table {
     width: 100%;
-    background: white;
-    border-collapse: collapse;
     margin-top: 20px;
-}
-
-th, td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-}
-
-
-table {
-    width: 100%;
     border-collapse: collapse;
     background: white;
-    margin-top: 20px;
+    border-radius: 6px;
+    overflow: hidden;
 }
 
 th {
@@ -72,7 +66,8 @@ th {
     text-align: center;
 }
 
-th, td {
+th,
+td {
     padding: 12px;
     border: 1px solid #ddd;
 }
@@ -85,27 +80,20 @@ tr:nth-child(even) {
     background-color: #f2f2f2;
 }
 
-a {
-    text-decoration: none;
-    font-weight: bold;
-}
-
-
 .center-wrapper {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 70vh;
 }
 
 .login-card {
+    width: 320px;
     background: white;
     padding: 25px;
     border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-    width: 320px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
 }
-
 
 .error {
     color: red;
@@ -114,14 +102,13 @@ a {
     font-weight: bold;
 }
 
-
 .exam-container {
-    width: 350px;
+    width: 320px;
     margin: 60px auto;
     background: white;
     padding: 25px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
 
@@ -135,44 +122,17 @@ a {
 }
 
 .exam-list a {
-    text-decoration: none;
-    font-size: 18px;
-    color: #2c3e50;
-    font-weight: bold;
-}
-
-.exam-list a:hover {
-    color: #0acce2;
-}
-
-.exam-list a {
     display: block;
+    font-size: 18px;
     background: #3498db;
     color: white;
     padding: 10px;
     border-radius: 6px;
 }
+
 .exam-list a:hover {
     background: #2980b9;
 }
-
-
-.center-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 70vh;   /* centers vertically */
-}
-
-.exam-container {
-    width: 320px;
-    background: white;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 0 12px rgba(0,0,0,0.1);
-    text-align: center;
-}
-
 
 .exam-wrapper {
     display: flex;
@@ -185,7 +145,7 @@ a {
     background: white;
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
 .question-block {
@@ -195,7 +155,6 @@ a {
 .exam-card input[type="radio"] {
     margin-right: 8px;
 }
-
 
 .result-wrapper {
     display: flex;
@@ -208,7 +167,15 @@ a {
     background: white;
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.result-card h2 {
+    text-align: center;
+}
+
+.result-card p:first-of-type {
+    margin-top: 15px;
 }
 
 .review-block {
@@ -228,35 +195,24 @@ a {
     font-weight: bold;
 }
 
-.result-card h2 {
-    text-align: center;
-}
-
-.result-card p:first-of-type {
-    margin-top: 15px;
-}
-
-/* Center admin content */
 .admin-wrapper {
     width: 100%;
     max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 30px;
+    margin: 30px auto 0;
 }
-/* Section cards */
+
 .admin-section {
     background: white;
     padding: 20px;
     margin-bottom: 25px;
     border-radius: 8px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease;
 }
 
-.container {
-    width: 100%;
+.admin-section:hover {
+    transform: translateY(-3px);
 }
-
 
 .stats-container {
     display: flex;
@@ -270,7 +226,7 @@ a {
     padding: 20px;
     border-radius: 8px;
     text-align: center;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 }
 
 .stat-card h2 {
@@ -287,15 +243,13 @@ a {
     margin-bottom: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
+    box-sizing: border-box;
 }
 
 .admin-section button {
     padding: 8px 14px;
     background: #3498db;
-    color: white;
-    border: none;
     border-radius: 5px;
-    cursor: pointer;
 }
 
 .admin-section button:hover {
@@ -303,48 +257,7 @@ a {
 }
 
 .admin-section table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.admin-section th {
-    background: #2c3e50;
-    color: white;
-}
-
-.admin-section th,
-.admin-section td {
-    padding: 10px;
-    border: 1px solid #ddd;
-}
-
-.admin-section {
-    transition: transform 0.2s ease;
-}
-
-.admin-section:hover {
-    transform: translateY(-3px);
-}
-
-button {
-    padding: 10px 15px;
-    border-radius: 6px;
-    border: none;
-    background: #4a90e2;
-    color: white;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #c2940b;
-}
-
-
-table {
-    background: white;
-    border-radius: 6px;
-    overflow: hidden;
+    margin-top: 0;
 }
 
 .success-message {

@@ -10,19 +10,23 @@ except ImportError as e:
     raise ImportError("werkzeug not installed. Please run: pip install werkzeug") from e
 
 import os
-import sqlite3
 import csv
-from database import create_tables
+from database import (
+    create_tables,
+    connect_db,
+    fetch_one,
+    fetch_all,
+    execute_write,
+    execute_many,
+    execute_batch,
+)
 
 app = Flask(__name__)
 app.secret_key = "exam_secret_key"
 
 
 def get_db_connection():
-    conn = sqlite3.connect("exam.db", timeout=10)
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute("PRAGMA synchronous=NORMAL")
-    return conn
+    return connect_db()
 
 
 # Initialize database during worker startup (important for gunicorn/Render).
@@ -50,16 +54,10 @@ def login():
         password = request.form["password"]
         role = request.form["role"]
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        cursor.execute(
+        user = fetch_one(
             "SELECT * FROM users WHERE username=? AND role=?",
             (username, role)
         )
-        user = cursor.fetchone()
-
-        conn.close()
 
         if user and check_password_hash(user[2], password):
             session["username"] = username
@@ -84,16 +82,10 @@ def register():
         username = request.form["username"]
         password = request.form["password"]
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        cursor.execute(
+        execute_write(
             "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
             (username, generate_password_hash(password), "student")
         )
-
-        conn.commit()
-        conn.close()
 
         flash("Registration successful! Please login.")
         return redirect("/login")
@@ -108,12 +100,7 @@ def create_exam():
         return redirect("/login")
 
     exam_name = request.form["exam_name"]
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO exams (exam_name) VALUES (?)", (exam_name,))
-    conn.commit()
-    conn.close()
+    execute_write("INSERT INTO exams (exam_name) VALUES (?)", (exam_name,))
 
     return redirect("/admin")
 
@@ -189,8 +176,6 @@ def admin():
     )
 
 
-import csv
-
 @app.route("/upload_questions", methods=["POST"])
 def upload_questions():
     if "role" not in session or session["role"] != "admin":
@@ -198,21 +183,19 @@ def upload_questions():
 
     file = request.files["file"]
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
     csv_data = csv.reader(file.stream.read().decode("UTF-8").splitlines())
     next(csv_data)  # Skip header row
 
-    for row in csv_data:
-        cursor.execute("""
-            INSERT INTO questions 
+    rows = [tuple(row) for row in csv_data]
+    if rows:
+        execute_many(
+            """
+            INSERT INTO questions
             (exam_id, question, option_a, option_b, option_c, option_d, correct_option)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, row)
-
-    conn.commit()
-    conn.close()
+            """,
+            rows,
+        )
 
     return redirect("/admin")
 
@@ -362,11 +345,7 @@ def clear_results():
     if "role" not in session or session["role"] != "admin":
         return redirect("/login")
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM results")
-    conn.commit()
-    conn.close()
+    execute_write("DELETE FROM results")
 
     return redirect("/admin")
 
@@ -376,11 +355,7 @@ def delete_question(q_id):
     if "role" not in session or session["role"] != "admin":
         return redirect("/login")
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM questions WHERE id=?", (q_id,))
-    conn.commit()
-    conn.close()
+    execute_write("DELETE FROM questions WHERE id=?", (q_id,))
 
     return redirect("/admin")
 
@@ -391,9 +366,6 @@ def edit_question(q_id):
     if "role" not in session or session["role"] != "admin":
         return redirect("/login")
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
     if request.method == "POST":
         question = request.form["question"]
         option_a = request.form["option_a"]
@@ -402,19 +374,14 @@ def edit_question(q_id):
         option_d = request.form["option_d"]
         correct_option = request.form["correct_option"]
 
-        cursor.execute("""
+        execute_write("""
             UPDATE questions
             SET question=?, option_a=?, option_b=?, option_c=?, option_d=?, correct_option=?
             WHERE id=?
         """, (question, option_a, option_b, option_c, option_d, correct_option, q_id))
-
-        conn.commit()
-        conn.close()
         return redirect("/admin")
 
-    cursor.execute("SELECT * FROM questions WHERE id=?", (q_id,))
-    question_data = cursor.fetchone()
-    conn.close()
+    question_data = fetch_one("SELECT * FROM questions WHERE id=?", (q_id,))
 
     return render_template("edit_question.html", q=question_data)
 
@@ -426,11 +393,7 @@ def export_results():
     if "role" not in session or session["role"] != "admin":
         return redirect("/login")
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT username, score FROM results")
-    data = cursor.fetchall()
-    conn.close()
+    data = fetch_all("SELECT username, score FROM results")
 
     def generate():
         yield "Username,Score\n"
@@ -450,23 +413,12 @@ def delete_exam(exam_id):
     if "role" not in session or session["role"] != "admin":
         return redirect("/login")
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Delete answers first (child table)
-    cursor.execute("DELETE FROM answers WHERE exam_id=?", (exam_id,))
-
-    # Delete results
-    cursor.execute("DELETE FROM results WHERE exam_id=?", (exam_id,))
-
-    # Delete questions
-    cursor.execute("DELETE FROM questions WHERE exam_id=?", (exam_id,))
-
-    # Finally delete exam
-    cursor.execute("DELETE FROM exams WHERE id=?", (exam_id,))
-
-    conn.commit()
-    conn.close()
+    execute_batch([
+        ("DELETE FROM answers WHERE exam_id=?", (exam_id,)),
+        ("DELETE FROM results WHERE exam_id=?", (exam_id,)),
+        ("DELETE FROM questions WHERE exam_id=?", (exam_id,)),
+        ("DELETE FROM exams WHERE id=?", (exam_id,)),
+    ])
 
     return redirect("/admin")
 
