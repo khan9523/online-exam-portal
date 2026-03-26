@@ -11,4 +11,13 @@ jobs:
     steps:
       - name: Ping health endpoint
         run: |
-          curl -fsS --max-time 20 https://online-exam-portal-6nxf.onrender.com/health
+          response="$(curl -fsS \
+            --max-time 120 \
+            --retry 4 \
+            --retry-delay 10 \
+            --retry-all-errors \
+            --connect-timeout 15 \
+            https://online-exam-portal-6nxf.onrender.com/health)"
+
+          echo "Health response: $response"
+          echo "$response" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"ok"'
