@@ -27,9 +27,24 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 # Initialize session
 Session(app)
 
+
+def ensure_admin_user():
+    """Create an admin account at startup if one does not already exist."""
+    admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
+    admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
+
+    existing_admin = fetch_one(
+        "SELECT id FROM users WHERE username = ? AND role = 'admin'",
+        (admin_username,)
+    )
+
+    if not existing_admin:
+        AuthManager.create_user(admin_username, admin_password, role='admin')
+
 # Create database tables on startup
 with app.app_context():
     create_tables()
+    ensure_admin_user()
 
 
 # ======================= DECORATORS =======================
