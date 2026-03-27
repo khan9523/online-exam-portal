@@ -14,7 +14,11 @@ def _get_database_path():
         os.makedirs(render_disk, exist_ok=True)
         return os.path.join(render_disk, "exam.db")
 
-    # Fallback to local project path for development.
+    # Use a writable temp path in containerized environments when no disk is mounted.
+    if os.name != "nt":
+        return "/tmp/exam.db"
+
+    # Fallback to local project path for Windows development.
     return "exam.db"
 
 
@@ -34,8 +38,17 @@ def _add_column_if_missing(cursor, table_name, column_name, definition):
 
 
 def connect_db():
-    conn = sqlite3.connect(_get_database_path(), timeout=10)
-    conn.execute("PRAGMA journal_mode=WAL")
+    db_path = _get_database_path()
+    db_dir = os.path.dirname(db_path)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
+
+    conn = sqlite3.connect(db_path, timeout=10)
+    try:
+        conn.execute("PRAGMA journal_mode=WAL")
+    except sqlite3.OperationalError:
+        # Some file systems do not support WAL; fallback to default journal mode.
+        conn.execute("PRAGMA journal_mode=DELETE")
     conn.execute("PRAGMA synchronous=NORMAL")
     return conn
 
