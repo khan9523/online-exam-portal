@@ -9,7 +9,7 @@ def _get_database_path():
         return explicit_path
 
     # Prefer Render persistent disk when mounted.
-    render_disk = os.environ.get("RENDER_DISK_PATH")
+    render_disk = os.environ.get("RENDER_DISK_PATH") or os.environ.get("RENDER_DISK_MOUNT_PATH")
     if render_disk:
         os.makedirs(render_disk, exist_ok=True)
         return os.path.join(render_disk, "exam.db")
