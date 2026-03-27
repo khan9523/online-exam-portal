@@ -1,44 +1,220 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block title %}Exam Result{% endblock %}
 
-<div class="result-wrapper">
-
-    <div class="result-card">
-
-        <h2>Exam Result</h2>
-
-        <p><b>Exam:</b> {{ exam_name }}</p>
-        <p>Total Questions: {{ total }}</p>
-        <p>Correct Answers: {{ score }}</p>
-        <p>Percentage: {{ percentage }}%</p>
-
-        <hr>
-
-        <h3>Answer Review</h3>
-
-{% for item in details %}
-<div class="review-block">
-
-    <p><b>Q{{ loop.index }}. {{ item.question }}</b></p>
-
-    <p>
-        Your Answer:
-        <span class="{% if item.is_correct %}correct{% else %}wrong{% endif %}">
-            {{ item.selected }}
-        </span>
-    </p>
-
-    <p>Correct Answer: <b>{{ item.correct }}</b></p>
-
-</div>
-{% endfor %}
-
-    </div>
-
-</div>
-
-
+{% block extra_css %}
+<style>
+    .result-container {
+        max-width: 900px;
+        margin: 20px auto;
+    }
+    
+    .result-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .result-header h2 {
+        margin-top: 0;
+        font-size: 32px;
+    }
+    
+    .result-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+    
+    .stat-box {
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: #666;
+        text-transform: uppercase;
+    }
+    
+    .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+    
+    .status-pass {
+        background: #27ae60;
+        color: white;
+    }
+    
+    .status-fail {
+        background: #e74c3c;
+        color: white;
+    }
+    
+    .answer-review {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .question-review {
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .question-review:last-child {
+        border-bottom: none;
+    }
+    
+    .review-header {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .review-options {
+        margin: 10px 0;
+    }
+    
+    .option-row {
+        padding: 8px 12px;
+        margin: 5px 0;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    
+    .your-answer {
+        background: #f0f4ff;
+        border-left: 4px solid #667eea;
+    }
+    
+    .correct-answer {
+        background: #f0f8f5;
+        border-left: 4px solid #27ae60;
+    }
+    
+    .wrong-answer {
+        background: #fef5f5;
+        border-left: 4px solid #e74c3c;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #5568d3;
+    }
+    
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #7f8c8d;
+    }
+</style>
 {% endblock %}
 
-
+{% block content %}
+<div class="result-container">
+    <div class="result-header">
+        <h2>Exam Completed!</h2>
+        <p>{{ exam[0] if exam else 'Exam' }}</p>
+        <div class="status-badge {% if result.status == 'PASS' %}status-pass{% else %}status-fail{% endif %}">
+            {{ result.status }}
+        </div>
+    </div>
+    
+    <div class="result-stats">
+        <div class="stat-box">
+            <div class="stat-label">Score</div>
+            <div class="stat-value">{{ result.correct_count }}/{{ result.question_count }}</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Percentage</div>
+            <div class="stat-value">{{ result.percentage }}%</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Time Taken</div>
+            <div class="stat-value">{{ "%.1f"|format(result.time_taken_minutes) }} min</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Passing %</div>
+            <div class="stat-value">{{ result.passing_percentage }}%</div>
+        </div>
+    </div>
+    
+    <div class="action-buttons">
+        <a href="{{ url_for('select_exam') }}" class="btn btn-primary">Back to Exams</a>
+        <a href="{{ url_for('download_result_pdf', exam_id=exam[1] if exam else 0) }}" class="btn btn-secondary">📄 Download PDF</a>
+    </div>
+    
+    {% if result.details %}
+    <div class="answer-review">
+        <h3>Answer Review</h3>
+        {% for idx, detail in enumerate(result.details, 1) %}
+        <div class="question-review">
+            <div class="review-header">Question {{ idx }}: {{ detail.question_text }}</div>
+            
+            <div class="review-options">
+                {% for key, option_text in detail.options.items() %}
+                    {% if key == detail.selected_option %}
+                    <div class="option-row {% if detail.is_correct %}correct-answer{% else %}wrong-answer{% endif %}">
+                        <strong>{{ key }}: {{ option_text }}</strong>
+                        {% if detail.is_correct %}
+                            ✓ Correct
+                        {% else %}
+                            ✗ Your answer
+                        {% endif %}
+                    </div>
+                    {% elif key == detail.correct_option %}
+                    <div class="option-row correct-answer">
+                        <strong>{{ key }}: {{ option_text }}</strong>
+                        ✓ Correct answer
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

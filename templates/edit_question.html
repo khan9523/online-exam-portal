@@ -1,33 +1,154 @@
 {% extends "base.html" %}
 
+{% block title %}Edit Question{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 30px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    h2 {
+        color: #667eea;
+        margin-top: 0;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 60px;
+    }
+    
+    input:focus,
+    select:focus,
+    textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+    }
+    
+    button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+    }
+    
+    .btn-submit {
+        background: #27ae60;
+        color: white;
+        flex: 1;
+    }
+    
+    .btn-submit:hover {
+        background: #229954;
+    }
+    
+    .btn-cancel {
+        background: #95a5a6;
+        color: white;
+        flex: 1;
+    }
+    
+    .btn-cancel:hover {
+        background: #7f8c8d;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-
-<div class="exam-wrapper">
-    <div class="exam-card edit-card">
-        <h2>Edit Question</h2>
-
-        <form method="post">
-            <label>Question</label>
-            <input type="text" name="question" value="{{ q[1] }}" required>
-
-            <label>Option A</label>
-            <input type="text" name="option_a" value="{{ q[2] }}" required>
-
-            <label>Option B</label>
-            <input type="text" name="option_b" value="{{ q[3] }}" required>
-
-            <label>Option C</label>
-            <input type="text" name="option_c" value="{{ q[4] }}" required>
-
-            <label>Option D</label>
-            <input type="text" name="option_d" value="{{ q[5] }}" required>
-
-            <label>Correct Option</label>
-            <input type="text" name="correct_option" value="{{ q[6] }}" required>
-
-            <button type="submit">Update Question</button>
-        </form>
-    </div>
+<div class="form-container">
+    <h2>Edit Question</h2>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="question">Question Text</label>
+            <textarea name="question" id="question" required>{{ question[2] }}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="option_a">Option A</label>
+            <input type="text" name="option_a" id="option_a" value="{{ question[4] }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="option_b">Option B</label>
+            <input type="text" name="option_b" id="option_b" value="{{ question[5] }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="option_c">Option C</label>
+            <input type="text" name="option_c" id="option_c" value="{{ question[6] }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="option_d">Option D</label>
+            <input type="text" name="option_d" id="option_d" value="{{ question[7] }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="correct_option">Correct Answer</label>
+            <select name="correct_option" id="correct_option" required>
+                <option value="A" {% if question[8] == 'A' %}selected{% endif %}>A</option>
+                <option value="B" {% if question[8] == 'B' %}selected{% endif %}>B</option>
+                <option value="C" {% if question[8] == 'C' %}selected{% endif %}>C</option>
+                <option value="D" {% if question[8] == 'D' %}selected{% endif %}>D</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="category">Category</label>
+            <input type="text" name="category" id="category" value="{{ question[9] }}" placeholder="e.g., Math, Science">
+        </div>
+        
+        <div class="form-group">
+            <label for="difficulty">Difficulty Level</label>
+            <select name="difficulty" id="difficulty">
+                <option value="Easy" {% if question[10] == 'Easy' %}selected{% endif %}>Easy</option>
+                <option value="Medium" {% if question[10] == 'Medium' %}selected{% endif %}>Medium</option>
+                <option value="Hard" {% if question[10] == 'Hard' %}selected{% endif %}>Hard</option>
+            </select>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">update Question</button>
+            <a href="{{ url_for('manage_questions', exam_id=question[1]) }}" class="btn-cancel" style="text-align: center; text-decoration: none;">Cancel</a>
+        </div>
+    </form>
 </div>
-
 {% endblock %}

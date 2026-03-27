@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Questions - {{ exam_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .questions-container {
+        max-width: 1200px;
+        margin: 20px auto;
+    }
+    
+    .add-question-section {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .btn-submit {
+        background: #27ae60;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        width: 200px;
+    }
+    
+    .btn-submit:hover {
+        background: #229954;
+    }
+    
+    .questions-list {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        background: #f8f9fa;
+        padding: 15px;
+        text-align: left;
+        font-weight: bold;
+        border-bottom: 2px solid #e0e0e0;
+    }
+    
+    td {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .question-text {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .btn-action {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 12px;
+        transition: background 0.3s;
+    }
+    
+    .btn-edit {
+        background: #3498db;
+        color: white;
+    }
+    
+    .btn-edit:hover {
+        background: #2980b9;
+    }
+    
+    .btn-delete {
+        background: #e74c3c;
+        color: white;
+    }
+    
+    .btn-delete:hover {
+        background: #c0392b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="questions-container">
+    <h1>Manage Questions: {{ exam_name }}</h1>
+    
+    <div class="add-question-section">
+        <h2 style="margin-top: 0; color: #667eea;">Add New Question</h2>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="question">Question Text</label>
+                <textarea name="question" id="question" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Options</label>
+                <div class="form-row">
+                    <div>
+                        <label for="option_a">Option A</label>
+                        <input type="text" name="option_a" id="option_a" required>
+                    </div>
+                    <div>
+                        <label for="option_b">Option B</label>
+                        <input type="text" name="option_b" id="option_b" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label for="option_c">Option C</label>
+                        <input type="text" name="option_c" id="option_c" required>
+                    </div>
+                    <div>
+                        <label for="option_d">Option D</label>
+                        <input type="text" name="option_d" id="option_d" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="correct_option">Correct Answer</label>
+                    <select name="correct_option" id="correct_option" required>
+                        <option value="">-- Select --</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <input type="text" name="category" id="category" placeholder="e.g., Math, Science" value="General">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="difficulty">Difficulty Level</label>
+                    <select name="difficulty" id="difficulty">
+                        <option value="Easy">Easy</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-submit">Add Question</button>
+        </form>
+    </div>
+    
+    {% if questions %}
+    <div class="questions-list">
+        <h2 style="padding: 15px; background: #f8f9fa; margin: 0; border-bottom: 1px solid #eee;">
+            Questions ({{ questions|length }})
+        </h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Question</th>
+                    <th>Category</th>
+                    <th>Difficulty</th>
+                    <th>Answer</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in questions %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td class="question-text">{{ q[1][:60] }}{% if q[1]|length > 60 %}...{% endif %}</td>
+                    <td>{{ q[3] }}</td>
+                    <td>{{ q[4] }}</td>
+                    <td><strong>{{ q[2] }}</strong></td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('edit_question', question_id=q[0]) }}" class="btn-action btn-edit">Edit</a>
+                            <a href="#" onclick="deleteQuestion({{ q[0] }})" class="btn-action btn-delete">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px;">
+        <p style="color: #666;">No questions added yet. Add your first question above.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function deleteQuestion(qid) {
+    if (confirm('Are you sure you want to delete this question?')) {
+        // Implement delete functionality
+        alert('Delete functionality to be implemented');
+    }
+}
+</script>
+{% endblock %}

@@ -1,3 +1,9 @@
 flask
+flask-session
 gunicorn
 werkzeug
+bcrypt
+python-dotenv
+reportlab
+pandas
+cryptography

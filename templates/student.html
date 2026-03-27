@@ -1,44 +1,206 @@
 {% extends "base.html" %}
 
+{% block title %}Student Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 20px auto;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card h3 {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    
+    .stat-card .value {
+        font-size: 32px;
+        font-weight: bold;
+    }
+    
+    .attempts-table {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        background: #f8f9fa;
+        padding: 12px;
+        text-align: left;
+        font-weight: bold;
+        color: #333;
+        border-bottom: 2px solid #e0e0e0;
+    }
+    
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .badge-pass {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .badge-fail {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .action-links {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .action-links a {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        transition: background 0.3s;
+    }
+    
+    .action-links a:hover {
+        background: #5568d3;
+    }
+    
+    .button-group {
+        margin: 20px 0;
+        text-align: center;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        margin: 0 5px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #5568d3;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-
-<div class="exam-wrapper">
-
-    <div class="exam-card">
-
-        <h2>Online Examination</h2>
-
-        <form method="POST">
-
-            {% for q in questions %}
-                <div class="question-block">
-                    <p><b>{{ loop.index }}. {{ q[2] }}</b></p>
-
-                    <label class="option-row">
-                        <input type="radio" name="{{ q[0] }}" value="A" required>
-                        <span>{{ q[3] }}</span>
-                    </label>
-                    <label class="option-row">
-                        <input type="radio" name="{{ q[0] }}" value="B">
-                        <span>{{ q[4] }}</span>
-                    </label>
-                    <label class="option-row">
-                        <input type="radio" name="{{ q[0] }}" value="C">
-                        <span>{{ q[5] }}</span>
-                    </label>
-                    <label class="option-row">
-                        <input type="radio" name="{{ q[0] }}" value="D">
-                        <span>{{ q[6] }}</span>
-                    </label>
-                </div>
-            {% endfor %}
-
-            <button type="submit">Submit Exam</button>
-
-        </form>
-
+<div class="dashboard-container">
+    <h1>Student Dashboard</h1>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Attempts</h3>
+            <div class="value">{{ dashboard.total_attempts }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Exams Passed</h3>
+            <div class="value">{{ dashboard.passed_attempts }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Exams Failed</h3>
+            <div class="value">{{ dashboard.failed_attempts }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Average Score</h3>
+            <div class="value">{{ "%.1f"|format(dashboard.average_percentage) }}%</div>
+        </div>
     </div>
-
+    
+    <div class="button-group">
+        <a href="{{ url_for('select_exam') }}" class="btn btn-primary">Take Another Exam</a>
+        <a href="{{ url_for('download_results_csv') }}" class="btn btn-primary">📊 Download Report CSV</a>
+    </div>
+    
+    {% if dashboard.exam_attempts %}
+    <h2>Exam Attempts</h2>
+    <div class="attempts-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Exam Name</th>
+                    <th>Score</th>
+                    <th>Percentage</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attempt in dashboard.exam_attempts %}
+                <tr>
+                    <td><strong>{{ attempt.exam_name }}</strong></td>
+                    <td>{{ attempt.score }}</td>
+                    <td>
+                        <strong>{{ "%.1f"|format(attempt.percentage) }}%</strong>
+                    </td>
+                    <td>
+                        <span class="badge {% if attempt.status == 'PASS' %}badge-pass{% else %}badge-fail{% endif %}">
+                            {{ attempt.status }}
+                        </span>
+                    </td>
+                    <td>{{ attempt.submitted_at }}</td>
+                    <td>
+                        <div class="action-links">
+                            <a href="{{ url_for('view_result', exam_id=attempt.exam_id) }}">View</a>
+                            <a href="{{ url_for('download_result_pdf', exam_id=attempt.exam_id) }}">PDF</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px;">
+        <p style="color: #666;">No exam attempts yet. <a href="{{ url_for('select_exam') }}">Start an exam now!</a></p>
+    </div>
+    {% endif %}
 </div>
-
 {% endblock %}

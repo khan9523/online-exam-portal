@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Exam Analytics - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-container {
+        max-width: 1200px;
+        margin: 20px auto;
+    }
+    
+    .stats-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-box {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+    
+    .stat-value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .analytics-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 15px 0;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        background: #f8f9fa;
+        padding: 12px;
+        text-align: left;
+        font-weight: bold;
+        font-size: 14px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+    
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .success-rate {
+        font-weight: bold;
+        color: #27ae60;
+    }
+    
+    .download-buttons {
+        display: flex;
+        gap: 10px;
+        margin: 20px 0;
+    }
+    
+    .btn-download {
+        padding: 10px 20px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background 0.3s;
+    }
+    
+    .btn-download:hover {
+        background: #5568d3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-container">
+    <h1>📊 Exam Analytics: {{ exam_name }}</h1>
+    
+    <div class="stats-overview">
+        <div class="stat-box">
+            <div class="stat-label">Total Attempts</div>
+            <div class="stat-value">{{ stats.total_attempts }}</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Average Score</div>
+            <div class="stat-value">{{ "%.1f"|format(stats.average_score) }}%</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Pass Rate</div>
+            <div class="stat-value">{{ "%.1f"|format(stats.pass_rate) }}%</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Average Time</div>
+            <div class="stat-value">{{ "%.1f"|format(stats.average_time_minutes) }} min</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Passing</div>
+            <div class="stat-value">{{ stats.pass_count }}</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Failing</div>
+            <div class="stat-value">{{ stats.fail_count }}</div>
+        </div>
+    </div>
+    
+    <div class="download-buttons">
+        <a href="{{ url_for('download_exam_analytics_pdf', exam_id=exam_id) }}" class="btn-download">📄 Download PDF Report</a>
+        <a href="{{ url_for('download_exam_results_csv', exam_id=exam_id) }}" class="btn-download">📊 Download CSV Results</a>
+    </div>
+    
+    {% if question_perf %}
+    <div class="analytics-section">
+        <h3 class="section-title">Question Performance</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Question</th>
+                    <th>Difficulty</th>
+                    <th>Category</th>
+                    <th>Attempts</th>
+                    <th>Correct</th>
+                    <th>Success Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in question_perf %}
+                <tr>
+                    <td><strong>{{ q.question_text[:60] }}...</strong></td>
+                    <td>{{ q.difficulty }}</td>
+                    <td>{{ q.category }}</td>
+                    <td>{{ q.total_attempts }}</td>
+                    <td>{{ q.correct_attempts }}</td>
+                    <td class="success-rate">{{ "%.1f"|format(q.success_rate) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    {% if category_perf %}
+    <div class="analytics-section">
+        <h3 class="section-title">Performance by Category</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Total Questions</th>
+                    <th>Correct Answers</th>
+                    <th>Success Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat in category_perf %}
+                <tr>
+                    <td><strong>{{ cat.category }}</strong></td>
+                    <td>{{ cat.total_questions }}</td>
+                    <td>{{ cat.correct_answers }}</td>
+                    <td class="success-rate">{{ "%.1f"|format(cat.success_rate) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    {% if difficulty_perf %}
+    <div class="analytics-section">
+        <h3 class="section-title">Performance by Difficulty</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Difficulty</th>
+                    <th>Total Questions</th>
+                    <th>Correct Answers</th>
+                    <th>Success Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for diff in difficulty_perf %}
+                <tr>
+                    <td><strong>{{ diff.difficulty }}</strong></td>
+                    <td>{{ diff.total_questions }}</td>
+                    <td>{{ diff.correct_answers }}</td>
+                    <td class="success-rate">{{ "%.1f"|format(diff.success_rate) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}Take Exam - {{ exam.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .exam-container {
+        max-width: 900px;
+        margin: 20px auto;
+    }
+    
+    .exam-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .exam-info h2 {
+        margin: 0;
+    }
+    
+    .timer {
+        font-size: 24px;
+        font-weight: bold;
+        padding: 10px 20px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 4px;
+        min-width: 150px;
+        text-align: center;
+    }
+    
+    .timer.critical {
+        background: #e74c3c;
+        animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    .question-container {
+        background: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .question-number {
+        color: #667eea;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .question-text {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 15px;
+    }
+    
+    .options {
+        margin: 15px 0;
+    }
+    
+    .option {
+        position: relative;
+        margin: 10px 0;
+    }
+    
+    .option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .option label {
+        display: block;
+        padding: 12px 15px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #f8f9fa;
+        transition: all 0.3s;
+        margin-left: 0;
+    }
+    
+    .option input[type="radio"]:checked + label {
+        border-color: #667eea;
+        background: #667eea;
+        color: white;
+    }
+    
+    .option label:hover {
+        border-color: #667eea;
+        background: #f0f4ff;
+    }
+    
+    .exam-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    
+    .btn-submit {
+        background: #27ae60;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: background 0.3s;
+    }
+    
+    .btn-submit:hover {
+        background: #229954;
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #eee;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        transition: width 0.3s;
+    }
+    
+    .question-nav {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    
+    .q-nav-btn {
+        width: 40px;
+        height: 40px;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        background: white;
+        font-weight: bold;
+        transition: all 0.3s;
+    }
+    
+    .q-nav-btn:hover {
+        border-color: #667eea;
+        background: #f0f4ff;
+    }
+    
+    .q-nav-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+    
+    .q-nav-btn.answered {
+        border-color: #27ae60;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="exam-container">
+    <div class="exam-header">
+        <div class="exam-info">
+            <h2>{{ exam.name }}</h2>
+            <p>{{ exam.description }}</p>
+        </div>
+        <div class="timer" id="timer">{{ exam.duration_minutes }}:00</div>
+    </div>
+    
+    <div class="progress-bar">
+        <div class="progress-fill" id="progress" style="width: 0%"></div>
+    </div>
+    
+    <form id="examForm" class="exam-form">
+        <input type="hidden" id="examId" name="exam_id" value="{{ exam.id }}">
+        <input type="hidden" id="sessionToken" name="session_token" value="{{ session_token }}">
+        <input type="hidden" id="timeTaken" name="time_taken" value="0">
+        
+        {% for i, question in enumerate(questions, 1) %}
+        <div class="question-container" data-question-id="{{ question.id }}">
+            <div class="question-number">
+                Question {{ i }} of {{ questions|length }}
+                <span style="color: #999; font-size: 12px;">
+                    [{{ question.category }} - {{ question.difficulty }}]
+                </span>
+            </div>
+            
+            <div class="question-text">{{ question.question }}</div>
+            
+            <div class="options">
+                {% for key, option_text in question.options.items() %}
+                <div class="option">
+                    <input type="radio" 
+                           id="q{{ question.id }}_{{ key }}" 
+                           name="answer_{{ question.id }}" 
+                           value="{{ key }}"
+                           data-question-id="{{ question.id }}">
+                    <label for="q{{ question.id }}_{{ key }}">{{ key }}: {{ option_text }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="exam-actions">
+            <button type="button" class="btn btn-submit" onclick="submitExam()">Submit Exam</button>
+            <button type="button" class="btn" onclick="confirmLogout()">Exit (Abandon)</button>
+        </div>
+    </form>
+</div>
+
+<script>
+let startTime = new Date();
+let durationMinutes = {{ exam.duration_minutes }};
+let endTime = new Date(startTime.getTime() + durationMinutes * 60000);
+const examId = {{ exam.id }};
+const sessionToken = document.getElementById('sessionToken').value;
+
+// Timer countdown
+function updateTimer() {
+    let now = new Date();
+    let timeRemaining = endTime - now;
+    
+    if (timeRemaining <= 0) {
+        submitExam();
+        return;
+    }
+    
+    const minutes = Math.floor(timeRemaining / 60000);
+    const seconds = Math.floor((timeRemaining % 60000) / 1000);
+    
+    const timerEl = document.getElementById('timer');
+    timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    
+    // Critical warning at 5 minutes or less
+    if (minutes <= 5) {
+        timerEl.classList.add('critical');
+    }
+}
+
+setInterval(updateTimer, 1000);
+updateTimer();
+
+// Track answered questions
+document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const container = this.closest('.question-container');
+        if (this.checked) {
+            container.style.borderLeft = '4px solid #27ae60';
+        }
+    });
+});
+
+async function submitExam() {
+    if (!confirm('Are you sure you want to submit the exam? This action cannot be undone.')) {
+        return;
+    }
+    
+    const timeTaken = (new Date() - startTime) / 60000; // in minutes
+    const answers = {};
+    
+    document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+        const questionId = radio.getAttribute('data-question-id');
+        answers[questionId] = radio.value;
+    });
+    
+    try {
+        const response = await fetch('{{ url_for("submit_exam") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                exam_id: examId,
+                session_token: sessionToken,
+                answers: answers,
+                time_taken: timeTaken
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert(`Exam submitted successfully!\n\nYour Score: ${result.correct_count}/${result.total_count}\nPercentage: ${result.percentage}%\nStatus: ${result.status}`);
+            window.location.href = `{{ url_for('view_result', exam_id=0) }}`.replace('/0', `/${examId}`);
+        } else {
+            alert('Error submitting exam: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+function confirmLogout() {
+    if (confirm('Are you sure you want to abandon this exam?')) {
+        window.location.href = '{{ url_for("select_exam") }}';
+    }
+}
+
+// Auto-submit on time expiration
+window.addEventListener('beforeunload', function(e) {
+    if (new Date() < endTime) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
+</script>
+{% endblock %}

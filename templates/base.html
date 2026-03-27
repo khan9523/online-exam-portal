@@ -3,23 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Exam Portal</title>
+    <title>{% block title %}Online Exam Portal{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-
     <div class="navbar">
-        <h2>Online Exam Portal</h2>
-        {% if session.get("username") %}
-            <div>
-                Welcome, {{ session.get("username") }} |
-                <a href="/logout">Logout</a>
-            </div>
-        {% endif %}
+        <div class="navbar-container">
+            <h2 class="navbar-title">📚 Online Exam Portal</h2>
+            {% if user %}
+                <div class="navbar-user">
+                    <span class="user-info">
+                        Welcome, <strong>{{ user.username }}</strong> 
+                        {% if user.role == 'admin' %}<span class="badge badge-admin">Admin</span>{% endif %}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+                </div>
+            {% endif %}
+        </div>
     </div>
 
-    {% block content %}
-    {% endblock %}
+    <div class="container">
+        {% if user %}
+            <nav class="sidebar">
+                {% if user.role == 'admin' %}
+                    <ul>
+                        <li><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('manage_exams') }}">Manage Exams</a></li>
+                        <li><a href="{{ url_for('manage_students') }}">Students</a></li>
+                    </ul>
+                {% else %}
+                    <ul>
+                        <li><a href="{{ url_for('student_dashboard') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('select_exam') }}">Take Exam</a></li>
+                    </ul>
+                {% endif %}
+            </nav>
+        {% endif %}
 
+        <main class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 Online Exam Portal. All rights reserved.</p>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
