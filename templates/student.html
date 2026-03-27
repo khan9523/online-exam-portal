@@ -14,10 +14,22 @@
                 <div class="question-block">
                     <p><b>{{ loop.index }}. {{ q[2] }}</b></p>
 
-                    <input type="radio" name="{{ q[0] }}" value="A" required> {{ q[3] }}<br>
-                    <input type="radio" name="{{ q[0] }}" value="B"> {{ q[4] }}<br>
-                    <input type="radio" name="{{ q[0] }}" value="C"> {{ q[5] }}<br>
-                    <input type="radio" name="{{ q[0] }}" value="D"> {{ q[6] }}<br><br>
+                    <label class="option-row">
+                        <input type="radio" name="{{ q[0] }}" value="A" required>
+                        <span>{{ q[3] }}</span>
+                    </label>
+                    <label class="option-row">
+                        <input type="radio" name="{{ q[0] }}" value="B">
+                        <span>{{ q[4] }}</span>
+                    </label>
+                    <label class="option-row">
+                        <input type="radio" name="{{ q[0] }}" value="C">
+                        <span>{{ q[5] }}</span>
+                    </label>
+                    <label class="option-row">
+                        <input type="radio" name="{{ q[0] }}" value="D">
+                        <span>{{ q[6] }}</span>
+                    </label>
                 </div>
             {% endfor %}
 

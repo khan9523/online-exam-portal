@@ -88,7 +88,7 @@
         </form>
 
         {% if message %}
-            <p style="color:green;">{{ message }}</p>
+            <p class="success-message">{{ message }}</p>
         {% endif %}
     </div>
 
@@ -120,13 +120,14 @@
         </table>
     </div>
 
+    <div class="admin-section">
+        <h3>Upload Questions (CSV)</h3>
 
-    <h3>Upload Questions (CSV)</h3>
-
-<form action="/upload_questions" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" required>
-    <button type="submit">Upload</button>
-</form>
+        <form action="/upload_questions" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
 
     <!-- Student Results -->
     <div class="admin-section">

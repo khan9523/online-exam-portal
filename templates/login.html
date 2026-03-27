@@ -12,10 +12,8 @@
 
     <title>Login</title>
 </head>
-<body>
-    <h2 style="text-align:center; margin-top:30px;">
-    Online Examination System - Login
-</h2>
+<body class="auth-page">
+    <h2 class="page-title">Online Examination System - Login</h2>
 
 
     {% with messages = get_flashed_messages() %}
@@ -32,18 +30,18 @@
         
 
     <form method="post" action="/login">
-        <label>Username:</label><br>
-        <input type="text" name="username" required><br><br>
+        <label>Username:</label>
+        <input type="text" name="username" required>
 
-        <label>Password:</label><br>
-        <input type="password" name="password" required><br><br>
+        <label>Password:</label>
+        <input type="password" name="password" required>
 
-        <label>Login As:</label><br>
+        <label>Login As:</label>
         <select name="role">
             
             <option value="student">Student</option>
             <option value="admin">Admin</option>
-        </select><br><br>
+        </select>
 
         <button type="submit">Login</button>
 
@@ -51,9 +49,7 @@
         <p class="error">{{ error }}</p>
         {% endif %}
 
-        <p style="text-align:center; margin-top:15px;">
-    New student? <a href="/register">Register here</a>
-</p>
+        <p class="auth-link">New student? <a href="/register">Register here</a></p>
     </form>
     </div>
     </div>

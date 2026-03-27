@@ -6,27 +6,24 @@
     <title>Register</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body class="auth-page">
 
-<h2 style="text-align:center;">Student Registration</h2>
+<h2 class="page-title">Student Registration</h2>
 
 <div class="center-wrapper">
     <div class="login-card">
 
         <form method="post">
-            <label>Username:</label><br>
-            <input type="text" name="username" required><br><br>
+            <label>Username:</label>
+            <input type="text" name="username" required>
 
-            <label>Password:</label><br>
-            <input type="password" name="password" required><br><br>
+            <label>Password:</label>
+            <input type="password" name="password" required>
 
             <button type="submit">Register</button>
         </form>
 
-        <p style="text-align:center; margin-top:10px;">
-            Already have an account?
-            <a href="/login">Login</a>
-        </p>
+        <p class="auth-link">Already have an account? <a href="/login">Login</a></p>
 
     </div>
 </div>
