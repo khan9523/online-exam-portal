@@ -5,7 +5,15 @@ def _add_column_if_missing(cursor, table_name, column_name, definition):
     cursor.execute(f"PRAGMA table_info({table_name})")
     columns = {row[1] for row in cursor.fetchall()}
     if column_name not in columns:
-        cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {definition}")
+        try:
+            cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {definition}")
+        except sqlite3.OperationalError as exc:
+            # SQLite cannot add columns with non-constant defaults via ALTER TABLE.
+            if "non-constant default" in str(exc).lower() and " default " in definition.lower():
+                base_definition = definition.split(" DEFAULT ", 1)[0]
+                cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {base_definition}")
+            else:
+                raise
 
 
 def connect_db():
@@ -215,6 +223,17 @@ def create_tables():
     _add_column_if_missing(cursor, "results", "time_taken_minutes", "REAL DEFAULT 0")
     _add_column_if_missing(cursor, "results", "question_count", "INTEGER DEFAULT 0")
     _add_column_if_missing(cursor, "results", "correct_count", "INTEGER DEFAULT 0")
+
+    cursor.execute("UPDATE users SET created_at = COALESCE(created_at, CURRENT_TIMESTAMP)")
+    cursor.execute("UPDATE users SET is_active = COALESCE(is_active, 1)")
+    cursor.execute("UPDATE exams SET randomize_questions = COALESCE(randomize_questions, 1)")
+    cursor.execute("UPDATE exams SET shuffle_options = COALESCE(shuffle_options, 1)")
+    cursor.execute("UPDATE exams SET passing_percentage = COALESCE(passing_percentage, 50)")
+    cursor.execute("UPDATE exams SET total_questions = COALESCE(total_questions, 10)")
+    cursor.execute("UPDATE exams SET created_at = COALESCE(created_at, CURRENT_TIMESTAMP)")
+    cursor.execute("UPDATE results SET time_taken_minutes = COALESCE(time_taken_minutes, 0)")
+    cursor.execute("UPDATE results SET question_count = COALESCE(question_count, 0)")
+    cursor.execute("UPDATE results SET correct_count = COALESCE(correct_count, 0)")
 
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_exam_sessions_token ON exam_sessions(session_token)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_admin_sessions_token ON admin_sessions(session_token)")

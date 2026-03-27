@@ -190,6 +190,7 @@
     
     <form id="examForm" class="exam-form">
         <input type="hidden" id="examId" name="exam_id" value="{{ exam.id }}">
+        <input type="hidden" id="durationMinutes" value="{{ exam.duration_minutes }}">
         <input type="hidden" id="sessionToken" name="session_token" value="{{ session_token }}">
         <input type="hidden" id="timeTaken" name="time_taken" value="0">
         
@@ -228,9 +229,9 @@
 
 <script>
 let startTime = new Date();
-let durationMinutes = {{ exam.duration_minutes }};
+let durationMinutes = parseInt(document.getElementById('durationMinutes').value, 10) || 30;
 let endTime = new Date(startTime.getTime() + durationMinutes * 60000);
-const examId = {{ exam.id }};
+const examId = parseInt(document.getElementById('examId').value, 10);
 const sessionToken = document.getElementById('sessionToken').value;
 
 // Timer countdown
