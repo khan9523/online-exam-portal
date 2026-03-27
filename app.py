@@ -14,8 +14,11 @@ from reports import ReportGenerator
 
 # Initialize Flask app
 app = Flask(__name__)
+session_dir = os.environ.get('SESSION_FILE_DIR', '/tmp/flask_session')
+os.makedirs(session_dir, exist_ok=True)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_FILE_DIR'] = session_dir
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=8)
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True

@@ -1,4 +1,21 @@
+import os
 import sqlite3
+
+
+def _get_database_path():
+    # Allow explicit override first.
+    explicit_path = os.environ.get("DATABASE_PATH")
+    if explicit_path:
+        return explicit_path
+
+    # Prefer Render persistent disk when mounted.
+    render_disk = os.environ.get("RENDER_DISK_PATH")
+    if render_disk:
+        os.makedirs(render_disk, exist_ok=True)
+        return os.path.join(render_disk, "exam.db")
+
+    # Fallback to local project path for development.
+    return "exam.db"
 
 
 def _add_column_if_missing(cursor, table_name, column_name, definition):
@@ -17,7 +34,7 @@ def _add_column_if_missing(cursor, table_name, column_name, definition):
 
 
 def connect_db():
-    conn = sqlite3.connect("exam.db", timeout=10)
+    conn = sqlite3.connect(_get_database_path(), timeout=10)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=NORMAL")
     return conn
