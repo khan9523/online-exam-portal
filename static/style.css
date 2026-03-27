@@ -410,6 +410,8 @@ tr:hover {
         gap: 10px;
     }
 }
+
+.navbar {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
