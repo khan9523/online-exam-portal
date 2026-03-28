@@ -14,11 +14,7 @@ def _get_database_path():
         os.makedirs(render_disk, exist_ok=True)
         return os.path.join(render_disk, "exam.db")
 
-    # Use a writable temp path in containerized environments when no disk is mounted.
-    if os.name != "nt":
-        return "/tmp/exam.db"
-
-    # Fallback to local project path for Windows development.
+    # Fallback to local project path (old behavior) when no explicit path is provided.
     return "exam.db"
 
 
