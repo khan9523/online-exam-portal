@@ -257,7 +257,7 @@ def take_exam(exam_id):
         return "Exam not found", 404
     
     # Get questions with randomization
-    questions = ExamManager.get_questions(
+    questions = ExamManager.get_exam_questions(
         exam_id,
         randomize=exam_config['randomize_questions'],
         shuffle_options=exam_config['shuffle_options']
