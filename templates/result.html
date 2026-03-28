@@ -177,7 +177,7 @@
         </div>
         <div class="stat-box">
             <div class="stat-label">Passing %</div>
-            <div class="stat-value">{{ result.passing_percentage }}%</div>
+            <div class="stat-value">{{ exam_passing_percentage }}%</div>
         </div>
     </div>
     
@@ -189,9 +189,9 @@
     {% if result.details %}
     <div class="answer-review">
         <h3>Answer Review</h3>
-        {% for idx, detail in enumerate(result.details, 1) %}
+        {% for detail in result.details %}
         <div class="question-review">
-            <div class="review-header">Question {{ idx }}: {{ detail.question_text }}</div>
+            <div class="review-header">Question {{ loop.index }}: {{ detail.question_text }}</div>
             
             <div class="review-options">
                 {% for key, option_text in detail.options.items() %}

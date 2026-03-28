@@ -313,9 +313,10 @@ def view_result(exam_id):
     if not result:
         return "Result not found", 404
     
-    exam = fetch_one("SELECT exam_name, description FROM exams WHERE id = ?", (exam_id,))
-    
-    return render_template('result.html', result=result, exam=exam)
+    exam = fetch_one("SELECT exam_name, description, passing_percentage FROM exams WHERE id = ?", (exam_id,))
+    exam_passing_percentage = exam[2] if exam else 50
+
+    return render_template('result.html', result=result, exam=exam, exam_passing_percentage=exam_passing_percentage)
 
 
 @app.route('/student/dashboard')
