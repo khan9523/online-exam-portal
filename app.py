@@ -572,12 +572,15 @@ def health():
 
 @app.errorhandler(404)
 def not_found(error):
-    return render_template('404.html'), 404
+    return '<h2>404 - Page Not Found</h2><p><a href="/">Go Home</a></p>', 404
 
 
 @app.errorhandler(500)
 def internal_error(error):
-    return render_template('500.html'), 500
+    import traceback, sys
+    tb = traceback.format_exc()
+    app.logger.error('500 error: %s', tb)
+    return '<h2>500 - Server Error</h2><p>Something went wrong. Please try again.</p>', 500
 
 
 # ======================= CONTEXT PROCESSORS =======================
