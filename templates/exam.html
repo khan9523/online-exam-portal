@@ -194,10 +194,10 @@
         <input type="hidden" id="sessionToken" name="session_token" value="{{ session_token }}">
         <input type="hidden" id="timeTaken" name="time_taken" value="0">
         
-        {% for i, question in enumerate(questions, 1) %}
+        {% for question in questions %}
         <div class="question-container" data-question-id="{{ question.id }}">
             <div class="question-number">
-                Question {{ i }} of {{ questions|length }}
+                Question {{ loop.index }} of {{ questions|length }}
                 <span style="color: #999; font-size: 12px;">
                     [{{ question.category }} - {{ question.difficulty }}]
                 </span>
