@@ -19,7 +19,7 @@ os.makedirs(session_dir, exist_ok=True)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_FILE_DIR'] = session_dir
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=8)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
@@ -163,12 +163,13 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
+        remember_me = request.form.get('remember_me') == 'on'
         
         user = AuthManager.authenticate_user(username, password)
         
         if user:
             session['user'] = user
-            session.permanent = True
+            session.permanent = remember_me
             
             # Create admin session for admin users
             if user['role'] == 'admin':
