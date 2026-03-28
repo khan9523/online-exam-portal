@@ -41,10 +41,90 @@ def ensure_admin_user():
     if not existing_admin:
         AuthManager.create_user(admin_username, admin_password, role='admin')
 
+
+def ensure_sample_exams():
+    """Seed sample exams and questions if there are no exams yet."""
+    existing_exam = fetch_one("SELECT id FROM exams LIMIT 1")
+    if existing_exam:
+        return
+
+    exams_to_seed = [
+        {
+            'name': 'Python Basics',
+            'description': 'Core Python syntax, data types, and functions.',
+            'duration': 30,
+            'questions': [
+                ('What is the output of print(2 ** 3)?', '6', '8', '9', '16', 'B', 'Operators', 'Easy'),
+                ('Which keyword is used to define a function in Python?', 'func', 'function', 'def', 'lambda', 'C', 'Syntax', 'Easy'),
+                ('Which type stores key-value pairs?', 'list', 'set', 'tuple', 'dict', 'D', 'Data Structures', 'Easy'),
+                ('Which method adds one item to a list?', 'append()', 'add()', 'insert_all()', 'push()', 'A', 'Collections', 'Medium'),
+                ('What does len([1, 2, 3]) return?', '2', '3', '4', 'Error', 'B', 'Built-ins', 'Easy'),
+            ],
+        },
+        {
+            'name': 'Web Development Fundamentals',
+            'description': 'HTML, CSS, HTTP, and basic web concepts.',
+            'duration': 25,
+            'questions': [
+                ('Which tag is used for hyperlinks in HTML?', '<link>', '<a>', '<href>', '<p>', 'B', 'HTML', 'Easy'),
+                ('Which HTTP method is commonly used to create data?', 'GET', 'POST', 'DELETE', 'HEAD', 'B', 'HTTP', 'Easy'),
+                ('What does CSS stand for?', 'Computer Style Sheets', 'Creative Style Syntax', 'Cascading Style Sheets', 'Colorful Style Sheets', 'C', 'CSS', 'Easy'),
+                ('Which status code means Not Found?', '200', '301', '404', '500', 'C', 'HTTP', 'Easy'),
+                ('Which property changes text color in CSS?', 'font-style', 'text-color', 'color', 'foreground', 'C', 'CSS', 'Medium'),
+            ],
+        },
+        {
+            'name': 'General Aptitude',
+            'description': 'Logical reasoning and quantitative basics.',
+            'duration': 20,
+            'questions': [
+                ('If 5x = 20, what is x?', '2', '4', '5', '10', 'B', 'Math', 'Easy'),
+                ('Find the next number: 2, 4, 8, 16, ?', '18', '24', '32', '34', 'C', 'Series', 'Easy'),
+                ('A train travels 60 km in 1 hour. Its speed is?', '60 km/h', '30 km/h', '90 km/h', '120 km/h', 'A', 'Speed', 'Easy'),
+                ('If all roses are flowers and some flowers fade quickly, which is true?', 'All roses fade quickly', 'Some roses may fade quickly', 'No roses are flowers', 'Roses are never flowers', 'B', 'Logic', 'Medium'),
+                ('What is 15% of 200?', '20', '25', '30', '35', 'C', 'Percentages', 'Easy'),
+            ],
+        },
+    ]
+
+    for exam_data in exams_to_seed:
+        execute_write(
+            """
+            INSERT INTO exams (exam_name, description, duration_minutes, passing_percentage, total_questions)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                exam_data['name'],
+                exam_data['description'],
+                exam_data['duration'],
+                50,
+                len(exam_data['questions'])
+            )
+        )
+
+        exam_row = fetch_one(
+            "SELECT id FROM exams WHERE exam_name = ? ORDER BY id DESC LIMIT 1",
+            (exam_data['name'],)
+        )
+        if not exam_row:
+            continue
+
+        exam_id = exam_row[0]
+        for question in exam_data['questions']:
+            execute_write(
+                """
+                INSERT INTO questions
+                (exam_id, question, option_a, option_b, option_c, option_d, correct_option, category, difficulty)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (exam_id, *question)
+            )
+
 # Create database tables on startup
 with app.app_context():
     create_tables()
     ensure_admin_user()
+    ensure_sample_exams()
 
 
 # ======================= DECORATORS =======================
