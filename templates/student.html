@@ -41,11 +41,13 @@
         border-radius: 8px;
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        overflow-x: auto;
     }
     
     table {
         width: 100%;
         border-collapse: collapse;
+        min-width: 720px;
     }
     
     th {
@@ -126,6 +128,22 @@
     
     .btn-primary:hover {
         background: #5568d3;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            margin: 12px auto;
+        }
+
+        .button-group .btn {
+            display: block;
+            margin: 8px 0;
+        }
+
+        .action-links {
+            flex-direction: column;
+            gap: 6px;
+        }
     }
 </style>
 {% endblock %}

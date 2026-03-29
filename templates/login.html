@@ -9,8 +9,9 @@
 <body class="auth-page">
     <div class="auth-container">
         <div class="auth-card">
-            <h1>📚 Online Exam Portal</h1>
+            <h1 class="auth-logo">📚 Online Exam Portal</h1>
             <h2>Login</h2>
+            <p class="auth-subtitle">Secure access for students and administrators</p>
             
             {% if error %}
                 <div class="alert alert-error">{{ error }}</div>
@@ -27,8 +28,8 @@
                     <input type="password" id="password" name="password" required autocomplete="current-password">
                 </div>
 
-                <div class="form-group" style="margin-top: -6px;">
-                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer;">
+                <div class="form-group remember-row">
+                    <label class="remember-label">
                         <input type="checkbox" name="remember_me" value="on">
                         Keep me logged in
                     </label>

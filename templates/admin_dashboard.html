@@ -144,6 +144,28 @@
         border-bottom: 2px solid #667eea;
         padding-bottom: 10px;
     }
+
+    @media (max-width: 768px) {
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .exam-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .exam-actions {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .action-link {
+            flex: 1;
+            text-align: center;
+        }
+    }
 </style>
 {% endblock %}
 

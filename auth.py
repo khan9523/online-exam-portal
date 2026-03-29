@@ -2,6 +2,7 @@ import bcrypt
 import secrets
 import hashlib
 from datetime import datetime, timedelta
+from werkzeug.security import check_password_hash
 from database import execute_write, fetch_one, execute_batch
 
 
@@ -37,24 +38,42 @@ class AuthManager:
     @staticmethod
     def authenticate_user(username, password):
         """Authenticate a user and return user data if valid."""
-        user = fetch_one("SELECT id, username, role, password_hash FROM users WHERE username = ?", (username,))
+        user = fetch_one(
+            "SELECT id, username, role, password_hash, password FROM users WHERE username = ? ORDER BY id DESC LIMIT 1",
+            (username,)
+        )
         
         if not user:
             return None
         
-        user_id, uname, role, password_hash = user
-        
-        # Try new hash format first, fallback to old plain text
-        if password_hash and password_hash.startswith('$2'):
-            if not AuthManager.verify_password(password, password_hash):
+        user_id, uname, role, password_hash, legacy_password = user
+        stored_secret = password_hash or legacy_password or ''
+
+        if not stored_secret:
+            return None
+
+        # Current bcrypt format.
+        if stored_secret.startswith('$2'):
+            if not AuthManager.verify_password(password, stored_secret):
                 return None
-        else:
-            # Legacy plain text password - migrate on login
-            if password != password_hash:
+        # Legacy Werkzeug hashes from previous app versions.
+        elif stored_secret.startswith('pbkdf2:') or stored_secret.startswith('scrypt:'):
+            if not check_password_hash(stored_secret, password):
                 return None
-            # Update with hashed password
             new_hash = AuthManager.hash_password(password)
-            execute_write("UPDATE users SET password_hash = ? WHERE username = ?", (new_hash, username))
+            execute_write(
+                "UPDATE users SET password_hash = ?, password = ? WHERE id = ?",
+                (new_hash, new_hash, user_id)
+            )
+        else:
+            # Very old plain text password fallback.
+            if password != stored_secret:
+                return None
+            new_hash = AuthManager.hash_password(password)
+            execute_write(
+                "UPDATE users SET password_hash = ?, password = ? WHERE id = ?",
+                (new_hash, new_hash, user_id)
+            )
         
         return {'id': user_id, 'username': uname, 'role': role}
     

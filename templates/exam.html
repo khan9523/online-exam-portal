@@ -123,6 +123,24 @@
     .btn-submit:hover {
         background: #229954;
     }
+
+    .btn-exit {
+        background: #fdecea;
+        color: #c0392b;
+        border: 2px solid #e74c3c;
+        padding: 12px 30px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: background 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    .btn-exit:hover {
+        background: #e74c3c;
+        color: white;
+        border-color: #c0392b;
+    }
     
     .progress-bar {
         width: 100%;
@@ -170,6 +188,27 @@
     
     .q-nav-btn.answered {
         border-color: #27ae60;
+    }
+
+    @media (max-width: 768px) {
+        .exam-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .timer {
+            width: 100%;
+        }
+
+        .exam-actions {
+            flex-direction: column;
+        }
+
+        .btn-submit,
+        .btn-exit {
+            width: 100%;
+        }
     }
 </style>
 {% endblock %}
@@ -222,7 +261,7 @@
         
         <div class="exam-actions">
             <button type="button" class="btn btn-submit" onclick="submitExam()">Submit Exam</button>
-            <button type="button" class="btn" onclick="confirmLogout()">Exit (Abandon)</button>
+            <button type="button" class="btn btn-exit" onclick="confirmLogout()">Exit (Abandon)</button>
         </div>
     </form>
 </div>
