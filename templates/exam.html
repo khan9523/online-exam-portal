@@ -272,6 +272,8 @@ let durationMinutes = parseInt(document.getElementById('durationMinutes').value,
 let endTime = new Date(startTime.getTime() + durationMinutes * 60000);
 const examId = parseInt(document.getElementById('examId').value, 10);
 const sessionToken = document.getElementById('sessionToken').value;
+let allowPageLeave = false;
+let examSubmitted = false;
 
 // Timer countdown
 function updateTimer() {
@@ -309,9 +311,15 @@ document.querySelectorAll('input[type="radio"]').forEach(radio => {
 });
 
 async function submitExam() {
+    if (examSubmitted) {
+        return;
+    }
+
     if (!confirm('Are you sure you want to submit the exam? This action cannot be undone.')) {
         return;
     }
+
+    examSubmitted = true;
     
     const timeTaken = (new Date() - startTime) / 60000; // in minutes
     const answers = {};
@@ -338,25 +346,28 @@ async function submitExam() {
         const result = await response.json();
         
         if (response.ok) {
-            alert(`Exam submitted successfully!\n\nYour Score: ${result.correct_count}/${result.total_count}\nPercentage: ${result.percentage}%\nStatus: ${result.status}`);
+            allowPageLeave = true;
             window.location.href = `{{ url_for('view_result', exam_id=0) }}`.replace('/0', `/${examId}`);
         } else {
+            examSubmitted = false;
             alert('Error submitting exam: ' + result.error);
         }
     } catch (error) {
+        examSubmitted = false;
         alert('Error: ' + error.message);
     }
 }
 
 function confirmLogout() {
     if (confirm('Are you sure you want to abandon this exam?')) {
+        allowPageLeave = true;
         window.location.href = '{{ url_for("select_exam") }}';
     }
 }
 
 // Auto-submit on time expiration
 window.addEventListener('beforeunload', function(e) {
-    if (new Date() < endTime) {
+    if (!allowPageLeave && new Date() < endTime) {
         e.preventDefault();
         e.returnValue = '';
     }
