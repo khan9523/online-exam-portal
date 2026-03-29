@@ -308,7 +308,39 @@ def submit_exam():
 @student_required
 def view_result(exam_id):
     username = session['user']['username']
-    result = ExamManager.get_student_result(username, exam_id)
+    try:
+        result = ExamManager.get_student_result(username, exam_id)
+    except Exception:
+        app.logger.exception("Failed to build detailed result for user=%s exam_id=%s", username, exam_id)
+        basic_result = fetch_one(
+            """
+            SELECT score,
+                   COALESCE(percentage, 0),
+                   COALESCE(status, 'FAIL'),
+                   COALESCE(time_taken_minutes, 0),
+                   COALESCE(question_count, 0),
+                   COALESCE(correct_count, score),
+                   submitted_at
+            FROM results
+            WHERE username = ? AND exam_id = ?
+            ORDER BY submitted_at DESC
+            LIMIT 1
+            """,
+            (username, exam_id)
+        )
+
+        result = None
+        if basic_result:
+            result = {
+                'score': basic_result[0],
+                'percentage': basic_result[1],
+                'status': basic_result[2],
+                'time_taken_minutes': basic_result[3],
+                'question_count': basic_result[4],
+                'correct_count': basic_result[5],
+                'submitted_at': basic_result[6],
+                'details': []
+            }
     
     if not result:
         return "Result not found", 404
@@ -316,7 +348,13 @@ def view_result(exam_id):
     exam = fetch_one("SELECT exam_name, description, passing_percentage FROM exams WHERE id = ?", (exam_id,))
     exam_passing_percentage = exam[2] if exam else 50
 
-    return render_template('result.html', result=result, exam=exam, exam_passing_percentage=exam_passing_percentage)
+    return render_template(
+        'result.html',
+        result=result,
+        exam=exam,
+        exam_id=exam_id,
+        exam_passing_percentage=exam_passing_percentage
+    )
 
 
 @app.route('/student/dashboard')
@@ -577,9 +615,7 @@ def not_found(error):
 
 @app.errorhandler(500)
 def internal_error(error):
-    import traceback, sys
-    tb = traceback.format_exc()
-    app.logger.error('500 error: %s', tb)
+    app.logger.exception('Unhandled server error at %s: %s', request.path, error)
     return '<h2>500 - Server Error</h2><p>Something went wrong. Please try again.</p>', 500
 
 

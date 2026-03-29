@@ -173,7 +173,7 @@
         </div>
         <div class="stat-box">
             <div class="stat-label">Time Taken</div>
-            <div class="stat-value">{{ "%.1f"|format(result.time_taken_minutes) }} min</div>
+            <div class="stat-value">{{ "%.1f"|format(result.time_taken_minutes or 0) }} min</div>
         </div>
         <div class="stat-box">
             <div class="stat-label">Passing %</div>
@@ -183,7 +183,7 @@
     
     <div class="action-buttons">
         <a href="{{ url_for('select_exam') }}" class="btn btn-primary">Back to Exams</a>
-        <a href="{{ url_for('download_result_pdf', exam_id=exam[1] if exam else 0) }}" class="btn btn-secondary">📄 Download PDF</a>
+        <a href="{{ url_for('download_result_pdf', exam_id=exam_id) }}" class="btn btn-secondary">📄 Download PDF</a>
     </div>
     
     {% if result.details %}
