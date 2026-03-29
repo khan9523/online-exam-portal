@@ -150,6 +150,24 @@
         background: #7f8c8d;
     }
 
+    .btn-reexam {
+        background: #27ae60;
+        color: white;
+    }
+
+    .btn-reexam:hover {
+        background: #229954;
+    }
+
+    .reexam-form {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        max-width: none;
+    }
+
     @media (max-width: 768px) {
         .result-header {
             padding: 22px 16px;
@@ -197,6 +215,9 @@
     
     <div class="action-buttons">
         <a href="{{ url_for('select_exam') }}" class="btn btn-primary">Back to Exams</a>
+        <form method="POST" action="{{ url_for('reexam', exam_id=exam_id) }}" class="reexam-form">
+            <button type="submit" class="btn btn-reexam">Re-Exam</button>
+        </form>
         <a href="{{ url_for('download_result_pdf', exam_id=exam_id) }}" class="btn btn-secondary">📄 Download PDF</a>
     </div>
     

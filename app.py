@@ -357,6 +357,27 @@ def view_result(exam_id):
     )
 
 
+@app.route('/student/reexam/<int:exam_id>', methods=['POST'])
+@student_required
+def reexam(exam_id):
+    username = session['user']['username']
+
+    execute_write(
+        "DELETE FROM answers WHERE username = ? AND exam_id = ?",
+        (username, exam_id)
+    )
+    execute_write(
+        "DELETE FROM results WHERE username = ? AND exam_id = ?",
+        (username, exam_id)
+    )
+    execute_write(
+        "DELETE FROM exam_sessions WHERE username = ? AND exam_id = ?",
+        (username, exam_id)
+    )
+
+    return redirect(url_for('take_exam', exam_id=exam_id))
+
+
 @app.route('/student/dashboard')
 @student_required
 def student_dashboard():
